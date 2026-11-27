@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>การเงินของฉัน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f5f1;
+    --card: #ffffff;
+    --ink: #1d2320;
+    --muted: #6b736e;
+    --line: #e3e6e0;
+    --accent: #1f6f5c;
+    --accent-soft: #e2f0ea;
+    --warn: #b7791f;
+    --bad: #c0392b;
+    --good: #1f6f5c;
+    --card-color: #6d4bb5;
+    --radius: 16px;
+    --nav-h: 68px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'IBM Plex Sans Thai', system-ui, -apple-system, sans-serif; font-size: 16px; }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+  input, select, textarea { font: inherit; color: inherit; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- โครงหน้า ---------- */
+  .app { max-width: 1100px; margin: 0 auto; padding: 16px 16px calc(var(--nav-h) + 32px); }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  header.top h1 { font-size: 20px; margin: 0; font-weight: 700; }
+  .month-pick { display: flex; align-items: center; gap: 4px; background: var(--card); border-radius: 999px; padding: 4px; border: 1px solid var(--line); }
+  .month-pick button { width: 34px; height: 34px; border-radius: 50%; font-size: 18px; }
+  .month-pick button:hover { background: var(--bg); }
+  .month-pick span { min-width: 108px; text-align: center; font-weight: 600; font-size: 15px; }
+
+  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom); background: var(--card); border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; z-index: 20; }
+  nav.tabs button { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; color: var(--muted); padding: 6px 0; }
+  nav.tabs button svg { width: 24px; height: 24px; }
+  nav.tabs button.on { color: var(--accent); font-weight: 600; }
+  nav.tabs .add { justify-self: center; width: 58px; height: 58px; border-radius: 50%; background: var(--accent); color: #fff;
+    font-size: 32px; line-height: 1; box-shadow: 0 6px 18px rgba(31,111,92,.35); margin-top: -18px; }
+
+  @media (min-width: 900px) {
+    .app { padding: 24px 24px 40px 244px; }
+    nav.tabs { top: 0; right: auto; width: 220px; height: auto; border-top: 0; border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; align-items: stretch; padding: 24px 12px; gap: 4px; }
+    nav.tabs::before { content: 'การเงินของฉัน'; font-weight: 700; font-size: 18px; padding: 0 12px 16px; order: -2; }
+    nav.tabs button { flex-direction: row; gap: 12px; font-size: 15px; padding: 10px 12px; border-radius: 10px; }
+    nav.tabs button.on { background: var(--accent-soft); }
+    nav.tabs .add { order: -1; width: auto; height: 44px; border-radius: 10px; font-size: 16px; margin: 0 0 12px; box-shadow: none; }
+    nav.tabs .add::after { content: ' บันทึกรายการ'; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  }
+
+  .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--line); margin-bottom: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 12px; font-weight: 600; display: flex; justify-content: space-between; align-items: baseline; }
+  .card h2 small { font-weight: 400; color: var(--muted); font-size: 13px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+
+  /* ---------- หน้าแรก ---------- */
+  .hero { background: var(--accent); color: #fff; border: 0; }
+  .hero .label { opacity: .8; font-size: 14px; }
+  .hero .big { font-size: 34px; font-weight: 700; margin: 2px 0 12px; }
+  .hero .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .hero .row div { background: rgba(255,255,255,.12); border-radius: 12px; padding: 8px 10px; }
+  .hero .row b { display: block; font-size: 16px; }
+  .hero .row span { font-size: 12px; opacity: .85; }
+
+  .bar-row { margin-bottom: 12px; }
+  .bar-row .head { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+  .bar { height: 8px; border-radius: 99px; background: var(--bg); overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+  .bar i.warn { background: var(--warn); }
+  .bar i.over { background: var(--bad); }
+
+  .check { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); gap: 8px; }
+  .check:last-child { border-bottom: 0; }
+  .check .done { color: var(--good); font-weight: 600; font-size: 14px; }
+  .pill-btn { border: 1px solid var(--accent); color: var(--accent); border-radius: 999px; padding: 6px 14px; font-size: 14px; white-space: nowrap; }
+  .pill-btn:active { background: var(--accent-soft); }
+
+  /* ---------- รายการ ---------- */
+  .tx { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .tx:last-child { border-bottom: 0; }
+  .tx .dot { width: 38px; height: 38px; border-radius: 12px; background: var(--bg); display: grid; place-items: center; font-weight: 700; color: var(--accent); flex: none; }
+  .tx .mid { flex: 1; min-width: 0; }
+  .tx .mid b { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx .mid span { font-size: 13px; color: var(--muted); }
+  .tx .amt { font-weight: 600; white-space: nowrap; }
+  .tx .amt.in { color: var(--good); }
+  .badge { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 99px; background: #efe9fa; color: var(--card-color); margin-left: 4px; vertical-align: 1px; }
+  .badge.tag { background: #fdf1dc; color: #8a5a12; }
+  .day-head { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); padding: 14px 0 2px; border-bottom: 1px solid var(--line); }
+  .search { width: 100%; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); margin-bottom: 12px; }
+
+  /* ---------- แผ่นบันทึก ---------- */
+  .sheet-bg { position: fixed; inset: 0; background: rgba(20,25,22,.45); z-index: 40; display: none; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 94vh; overflow: auto; background: var(--card);
+    border-radius: 22px 22px 0 0; padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); z-index: 41;
+    transform: translateY(105%); transition: transform .22s ease; }
+  .sheet.open { transform: translateY(0); }
+  @media (min-width: 700px) {
+    .sheet { left: 50%; right: auto; bottom: auto; top: 50%; width: 520px; border-radius: 22px; transform: translate(-50%, -40%); opacity: 0; pointer-events: none; transition: all .18s ease; }
+    .sheet.open { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
+  }
+  .grip { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 10px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border-radius: 12px; padding: 4px; gap: 4px; }
+  .seg button { padding: 8px; border-radius: 9px; font-weight: 500; color: var(--muted); }
+  .seg button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .seg.pay button.on[data-v="บัตรเครดิต"] { color: var(--card-color); }
+  .amount-wrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin: 14px 0 6px; }
+  .amount-wrap span { font-size: 26px; color: var(--muted); }
+  #amount { font-size: 44px; font-weight: 700; border: 0; outline: 0; width: 220px; text-align: center; background: transparent; }
+  .hint { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 12px; min-height: 18px; }
+  .cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; margin: 12px 0; }
+  .cats button { background: var(--bg); border-radius: 12px; padding: 12px 6px; font-size: 14px; line-height: 1.25; min-height: 56px; border: 2px solid transparent; }
+  .cats button.on { border-color: var(--accent); background: var(--accent-soft); }
+  .cats button:active { transform: scale(.97); }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .fields label { font-size: 12px; color: var(--muted); display: block; }
+  .fields input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); margin-top: 2px; }
+  .fields .full { grid-column: 1 / -1; }
+  .actions { display: flex; gap: 8px; margin-top: 14px; }
+  .btn { flex: 1; padding: 13px; border-radius: 12px; background: var(--accent); color: #fff; font-weight: 600; }
+  .btn.ghost { background: var(--bg); color: var(--ink); }
+  .btn.danger { background: #fbeae8; color: var(--bad); flex: 0 0 auto; padding: 13px 18px; }
+  .btn:disabled { opacity: .5; }
+
+  /* ---------- ปิดเดือน ---------- */
+  .acc { display: grid; grid-template-columns: 1fr 150px; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .acc:last-child { border-bottom: 0; }
+  .acc input { width: 100%; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); text-align: right; }
+  .acc input.changed { border-color: var(--accent); background: var(--accent-soft); }
+  .acc .prev { font-size: 12px; color: var(--muted); }
+  .sum-line { display: flex; justify-content: space-between; padding: 6px 0; }
+  .sum-line.total { font-weight: 700; font-size: 18px; border-top: 1px solid var(--line); margin-top: 6px; padding-top: 10px; }
+
+  /* ---------- อื่นๆ ---------- */
+  .toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 24px); transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff;
+    padding: 10px 18px; border-radius: 999px; font-size: 14px; opacity: 0; transition: all .2s; z-index: 60; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .loading { text-align: center; padding: 60px 0; color: var(--muted); }
+  .pending { background: #fdf1dc; color: #8a5a12; border-radius: 12px; padding: 10px 14px; font-size: 14px; margin-bottom: 12px; display: none; }
+  .empty { color: var(--muted); text-align: center; padding: 20px 0; font-size: 14px; }
+  svg text { font-family: inherit; }
+  .view { display: none; }
+  .view.on { display: block; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1 id="title">เดือนนี้</h1>
+    <div class="month-pick" id="monthPick">
+      <button onclick="shiftMonth(-1)" aria-label="เดือนก่อน">‹</button>
+      <span id="monthLabel" class="num"></span>
+      <button onclick="shiftMonth(1)" aria-label="เดือนถัดไป">›</button>
+    </div>
+  </header>
+
+  <div class="pending" id="pendingBox"></div>
+
+  <section class="view on" id="v-home"><div class="loading">กำลังโหลด…</div></section>
+  <section class="view" id="v-list"></section>
+  <section class="view" id="v-close"></section>
+  <section class="view" id="v-overview"></section>
+  <section class="view" id="v-settings"></section>
+</div>
+
+<nav class="tabs">
+  <button data-v="home" class="on" onclick="go('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>หน้าแรก</button>
+  <button data-v="list" onclick="go('list')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>รายการ</button>
+  <button class="add" onclick="openEntry()" aria-label="บันทึกรายการ">+</button>
+  <button data-v="close" onclick="go('close')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>ปิดเดือน</button>
+  <button data-v="overview" onclick="go('overview')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18M6 16l4-5 4 3 5-7"/></svg>ภาพรวม</button>
+</nav>
+
+<div class="sheet-bg" id="sheetBg" onclick="closeEntry()"></div>
+<div class="sheet" id="entry" role="dialog" aria-label="บันทึกรายการ">
+  <div class="grip"></div>
+  <div class="seg" id="typeSeg">
+    <button data-v="รายจ่าย" class="on" onclick="setType('รายจ่าย')">รายจ่าย</button>
+    <button data-v="รายรับ" onclick="setType('รายรับ')">รายรับ</button>
+  </div>
+  <div class="amount-wrap"><span>฿</span><input id="amount" class="num" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+  <div class="hint" id="hint">ใส่จำนวนเงิน แล้วแตะหมวดเพื่อบันทึก</div>
+  <div class="seg pay" id="paySeg"></div>
+  <div class="cats" id="cats"></div>
+  <div class="fields">
+    <div><label>วันที่<input type="date" id="date"></label></div>
+    <div><label>แท็ก (เช่น ทริปจีน)<input id="tag" list="tagList" autocomplete="off"></label><datalist id="tagList"></datalist></div>
+    <div class="full"><label>หมายเหตุ<input id="note" autocomplete="off"></label></div>
+  </div>
+  <div class="actions" id="entryActions"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================= สถานะ ======================= */
+var S = {
+  view: 'home', month: '', today: '', categories: [], accounts: [], payMethods: ['เงินสด', 'บัตรเครดิต'], goal: 1000000,
+  dash: null, list: null, snap: null, overview: null,
+  entry: { mode: 'new', type: 'รายจ่าย', method: localStorage.getItem('fin.method') || 'เงินสด', category: '', id: '' }
+};
+var QUEUE_KEY = 'fin.queue';
+
+/* ======================= เรียกเซิร์ฟเวอร์ ======================= */
+var CFG_KEY = 'fin.cfg';
+function getCfg() { try { return JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); } catch (e) { return {}; } }
+function call(fn) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  var cfg = getCfg();
+  if (!cfg.url || !cfg.key) return Promise.reject(new Error('ยังไม่ได้ตั้งค่าการเชื่อมต่อ'));
+  return fetch(cfg.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ key: cfg.key, fn: fn, args: args })
+  }).then(function (r) { return r.text(); }).then(function (txt) {
+    var j;
+    try { j = JSON.parse(txt); } catch (e) { throw new Error('เชื่อมต่อไม่ได้ ตรวจว่าเผยแพร่แบบ "ทุกคน" และ URL ลงท้ายด้วย /exec'); }
+    if (j.error) throw new Error(j.error);
+    return j.result;
+  });
+}
+
+/* ======================= ตัวช่วย ======================= */
+var TH_MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function money(n, dec) { n = Number(n) || 0; return n.toLocaleString('th-TH', { minimumFractionDigits: dec ? 2 : 0, maximumFractionDigits: dec ? 2 : 0 }); }
+function moneyShort(n) { var a = Math.abs(n); if (a >= 1e6) return (n / 1e6).toFixed(2) + 'M'; if (a >= 1e3) return Math.round(n / 1e3) + 'k'; return String(Math.round(n)); }
+function monthLabel(m) { var p = m.split('-'); return TH_MONTHS[Number(p[1]) - 1] + ' ' + (Number(p[0]) + 543); }
+function monthShort(m) { var p = m.split('-'); return TH_MONTHS[Number(p[1]) - 1] + String(Number(p[0]) + 543).slice(2); }
+function addMonth(m, d) { var p = m.split('-').map(Number); var t = p[0] * 12 + (p[1] - 1) + d; return Math.floor(t / 12) + '-' + String(t % 12 + 1).padStart(2, '0'); }
+function dayLabel(d) { var p = d.split('-'); return Number(p[2]) + ' ' + TH_MONTHS[Number(p[1]) - 1]; }
+function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('show'); }, 2200); }
+function el(id) { return document.getElementById(id); }
+function uid() { return Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 5); }
+function fail(e) { toast('ผิดพลาด: ' + (e && e.message ? e.message : e)); }
+
+/* ======================= การนำทาง ======================= */
+var TITLES = { home: 'เดือนนี้', list: 'รายการ', close: 'ปิดเดือน', overview: 'ภาพรวม', settings: 'ตั้งค่าการเชื่อมต่อ' };
+function go(v) {
+  S.view = v;
+  document.querySelectorAll('.view').forEach(function (x) { x.classList.toggle('on', x.id === 'v-' + v); });
+  document.querySelectorAll('nav.tabs button[data-v]').forEach(function (b) { b.classList.toggle('on', b.dataset.v === v); });
+  setTitle();
+  el('monthPick').style.visibility = v === 'overview' || v === 'settings' ? 'hidden' : 'visible';
+  refreshView();
+  window.scrollTo(0, 0);
+}
+function setTitle() { el('title').textContent = S.view === 'home' && S.month && S.month !== S.today.slice(0, 7) ? 'สรุปเดือน' : TITLES[S.view]; }
+function shiftMonth(d) { S.month = addMonth(S.month, d); el('monthLabel').textContent = monthLabel(S.month); setTitle(); S.list = null; S.snap = null; refreshView(true); }
+function refreshView(monthChanged) {
+  if (S.view === 'home') { if (monthChanged || !S.dash || S.dash.month !== S.month) loadDash(); else renderHome(); }
+  if (S.view === 'list') loadList();
+  if (S.view === 'close') loadSnap();
+  if (S.view === 'overview') loadOverview();
+  if (S.view === 'settings') renderSettings();
+}
+
+/* ======================= หน้าแรก ======================= */
+function loadDash() {
+  el('v-home').innerHTML = '<div class="loading">กำลังโหลด…</div>';
+  call('getDashboard', S.month).then(function (d) { S.dash = d; renderHome(); }).catch(fail);
+}
+function renderHome() {
+  var d = S.dash, t = d.totals;
+  var income = t.income || d.plannedIncome;
+  var html = '';
+  html += '<div class="card hero"><div class="label">เหลือใช้เดือนนี้' + (t.income ? '' : ' (คิดจากเงินเดือนตามแผน)') + '</div>' +
+    '<div class="big num">฿' + money(income - t.spent) + '</div><div class="row">' +
+    '<div><span>รายรับ</span><b class="num">' + money(t.income) + '</b></div>' +
+    '<div><span>ใช้ไปแล้ว</span><b class="num">' + money(t.spent) + '</b></div>' +
+    '<div><span>รูดบัตรเดือนนี้</span><b class="num">' + money(d.cardTotal) + '</b></div></div></div>';
+
+  html += '<div class="grid2"><div>';
+  html += '<div class="card"><h2>งบรายจ่ายไม่คงที่ <small class="num">' + money(t.variable) + ' / ' + money(d.planned.variable) + '</small></h2>';
+  if (!d.budgets.length) html += '<div class="empty">ยังไม่ได้ตั้งงบ</div>';
+  d.budgets.forEach(function (b) {
+    var pct = b.budget ? b.spent / b.budget : (b.spent ? 1.2 : 0);
+    var cls = pct > 1 ? 'over' : pct > 0.8 ? 'warn' : '';
+    html += '<div class="bar-row"><div class="head"><span>' + esc(b.name) + '</span><span class="num ' + (pct > 1 ? 'over' : '') + '">' +
+      money(b.spent) + ' <span class="muted">/ ' + money(b.budget) + '</span></span></div>' +
+      '<div class="bar"><i class="' + cls + '" style="width:' + Math.min(100, pct * 100) + '%"></i></div></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="card"><h2>จ่ายประจำเดือน <small>แตะเพื่อบันทึกตามงบ</small></h2>';
+  d.checklist.forEach(function (c, i) {
+    html += '<div class="check"><div><div>' + esc(c.name) + '</div><div class="small muted num">' + money(c.budget) + ' บาท</div></div>' +
+      (c.paid ? '<span class="done num">จ่ายแล้ว ' + money(c.paid) + '</span>' : '<button class="pill-btn" onclick="payFixed(' + i + ')">จ่ายแล้ว</button>') + '</div>';
+  });
+  html += '</div></div>';
+
+  html += '<div><div class="card"><h2>ล่าสุด <small>' + d.count + ' รายการ</small></h2>';
+  if (!d.recent.length) html += '<div class="empty">ยังไม่มีรายการเดือนนี้ กด + เพื่อเริ่มบันทึก</div>';
+  html += d.recent.map(txRow).join('');
+  if (d.count > d.recent.length) html += '<button class="pill-btn" style="margin-top:10px" onclick="go(\'list\')">ดูทั้งหมด</button>';
+  html += '</div></div></div>';
+  el('v-home').innerHTML = html;
+}
+function payFixed(i) {
+  var c = S.dash.checklist[i];
+  submitTx({ id: uid(), type: 'รายจ่าย', category: c.name, amount: c.budget, method: 'เงินสด', date: defaultDate(), note: '', tag: '' });
+}
+
+/* ======================= รายการ ======================= */
+function txRow(t) {
+  var inc = t.type === 'รายรับ';
+  var cache = (window._txCache = window._txCache || {});
+  cache[t.id] = t;
+  return '<div class="tx" onclick="openEntry(window._txCache[\'' + esc(t.id) + '\'])"><div class="dot">' + esc(t.category.charAt(0)) + '</div>' +
+    '<div class="mid"><b>' + esc(t.note || t.category) + '</b><span>' + esc(t.note ? t.category : '') + (t.note ? ' · ' : '') + dayLabel(t.date) +
+    (t.method === 'บัตรเครดิต' ? '<span class="badge">บัตร</span>' : '') + (t.tag ? '<span class="badge tag">' + esc(t.tag) + '</span>' : '') + '</span></div>' +
+    '<div class="amt num ' + (inc ? 'in' : '') + '">' + (inc ? '+' : '−') + money(t.amount, t.amount % 1 !== 0) + '</div></div>';
+}
+function loadList() {
+  if (S.list && S.list.month === S.month) return renderList();
+  el('v-list').innerHTML = '<div class="loading">กำลังโหลด…</div>';
+  call('listTransactions', S.month).then(function (rows) { S.list = { month: S.month, rows: rows }; renderList(); }).catch(fail);
+}
+function renderList() {
+  var q = (el('q') && el('q').value || '').trim().toLowerCase();
+  var rows = S.list.rows.filter(function (t) { return !q || (t.category + ' ' + t.note + ' ' + t.tag + ' ' + t.method).toLowerCase().indexOf(q) >= 0; });
+  var html = '';
+  if (!el('q')) html += '<input class="search" id="q" placeholder="ค้นหา หมวด หมายเหตุ แท็ก หรือ บัตรเครดิต" oninput="renderListBody()">';
+  var body = '<div class="card">';
+  var sumOut = 0, sumIn = 0;
+  rows.forEach(function (t) { if (t.type === 'รายรับ') sumIn += t.amount; else sumOut += t.amount; });
+  body += '<div class="sum-line small"><span class="muted">' + rows.length + ' รายการ</span><span class="num">รับ ' + money(sumIn) + ' · จ่าย ' + money(sumOut) + '</span></div>';
+  if (!rows.length) body += '<div class="empty">ไม่มีรายการ</div>';
+  var day = '';
+  rows.forEach(function (t) {
+    if (t.date !== day) {
+      day = t.date;
+      var tot = rows.filter(function (x) { return x.date === day && x.type !== 'รายรับ'; }).reduce(function (a, x) { return a + x.amount; }, 0);
+      body += '<div class="day-head"><span>' + dayLabel(day) + '</span><span class="num">' + money(tot) + '</span></div>';
+    }
+    body += txRow(t);
+  });
+  body += '</div>';
+  if (el('q')) { el('listBody').innerHTML = body; return; }
+  el('v-list').innerHTML = html + '<div id="listBody">' + body + '</div>';
+}
+function renderListBody() { renderList(); }
+
+/* ======================= แผ่นบันทึก ======================= */
+function defaultDate() { return S.month === S.today.slice(0, 7) ? S.today : S.month + '-01'; }
+function openEntry(tx) {
+  var E = S.entry;
+  if (tx) {
+    E.mode = 'edit'; E.id = tx.id; E.type = tx.type; E.category = tx.category; E.method = tx.method || 'เงินสด';
+    el('amount').value = tx.amount; el('date').value = tx.date; el('note').value = tx.note; el('tag').value = tx.tag;
+  } else {
+    E.mode = 'new'; E.id = ''; E.type = 'รายจ่าย'; E.category = ''; E.method = localStorage.getItem('fin.method') || 'เงินสด';
+    el('amount').value = ''; el('date').value = defaultDate(); el('note').value = ''; el('tag').value = localStorage.getItem('fin.tag') || '';
+  }
+  renderEntry();
+  el('sheetBg').style.display = 'block';
+  requestAnimationFrame(function () { el('entry').classList.add('open'); });
+  if (!tx) setTimeout(function () { el('amount').focus(); }, 120);
+}
+function closeEntry() { el('entry').classList.remove('open'); el('sheetBg').style.display = 'none'; el('amount').blur(); }
+function setType(t) { S.entry.type = t; S.entry.category = ''; renderEntry(); }
+function setMethod(m) { S.entry.method = m; localStorage.setItem('fin.method', m); renderEntry(); }
+function renderEntry() {
+  var E = S.entry;
+  document.querySelectorAll('#typeSeg button').forEach(function (b) { b.classList.toggle('on', b.dataset.v === E.type); });
+  el('paySeg').style.display = E.type === 'รายรับ' ? 'none' : 'grid';
+  el('paySeg').innerHTML = S.payMethods.map(function (m) {
+    return '<button data-v="' + esc(m) + '" class="' + (m === E.method ? 'on' : '') + '" onclick="setMethod(this.dataset.v)">' + esc(m) + '</button>';
+  }).join('');
+  var wantIncome = E.type === 'รายรับ';
+  var freq = (S.dash && S.dash.freq) || {};
+  var cats = S.categories.filter(function (c) { return (c.group === 'รายรับ') === wantIncome; });
+  if (E.mode === 'new') cats = cats.slice().sort(function (a, b) { return (freq[b.name] || 0) - (freq[a.name] || 0) || a.order - b.order; });
+  el('cats').innerHTML = cats.map(function (c) {
+    return '<button data-n="' + esc(c.name) + '" class="' + (c.name === E.category ? 'on' : '') + '" onclick="pickCat(this.dataset.n)">' + esc(c.name) + '</button>';
+  }).join('');
+  el('hint').textContent = E.mode === 'edit' ? 'แก้ไขแล้วกดบันทึก' : 'ใส่จำนวนเงิน แล้วแตะหมวดเพื่อบันทึก';
+  el('tagList').innerHTML = ((S.dash && S.dash.tags) || []).map(function (t) { return '<option value="' + esc(t) + '">'; }).join('');
+  el('entryActions').innerHTML = E.mode === 'edit'
+    ? '<button class="btn danger" onclick="deleteTx()">ลบ</button><button class="btn ghost" onclick="closeEntry()">ยกเลิก</button><button class="btn" onclick="saveEdit()">บันทึก</button>'
+    : '<button class="btn ghost" onclick="closeEntry()">ปิด</button>';
+}
+function readAmount() {
+  var raw = el('amount').value.replace(/,/g, '').trim();
+  // รองรับการพิมพ์ 120+35 เพื่อรวมยอด
+  if (/^[\d.+\s]+$/.test(raw) && raw.indexOf('+') >= 0) return raw.split('+').reduce(function (a, x) { return a + (Number(x) || 0); }, 0);
+  return Number(raw);
+}
+function pickCat(name) {
+  var E = S.entry;
+  E.category = name;
+  if (E.mode === 'edit') return renderEntry();
+  var amount = readAmount();
+  if (!(amount > 0)) { renderEntry(); el('hint').textContent = 'ใส่จำนวนเงินก่อนนะครับ'; el('amount').focus(); return; }
+  var tx = { id: uid(), type: E.type, category: name, amount: amount, method: E.method, date: el('date').value || defaultDate(),
+    note: el('note').value.trim(), tag: el('tag').value.trim() };
+  localStorage.setItem('fin.tag', tx.tag);
+  closeEntry();
+  submitTx(tx);
+}
+function saveEdit() {
+  var E = S.entry, amount = readAmount();
+  if (!(amount > 0)) return toast('จำนวนเงินไม่ถูกต้อง');
+  if (!E.category) return toast('เลือกหมวดก่อน');
+  var tx = { id: E.id, type: E.type, category: E.category, amount: amount, method: E.method, date: el('date').value, note: el('note').value.trim(), tag: el('tag').value.trim(), viewMonth: S.month };
+  closeEntry();
+  toast('กำลังบันทึก…');
+  call('updateTransaction', tx).then(afterChange('แก้ไขแล้ว')).catch(fail);
+}
+function deleteTx() {
+  var id = S.entry.id;
+  closeEntry();
+  toast('กำลังลบ…');
+  call('deleteTransaction', id, S.month).then(afterChange('ลบแล้ว')).catch(fail);
+}
+function afterChange(msg) {
+  return function (dash) { S.dash = dash; S.list = null; toast(msg); refreshView(); };
+}
+
+/* ======================= บันทึก + คิวออฟไลน์ ======================= */
+function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch (e) { return []; } }
+function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); showPending(); }
+function showPending() {
+  var n = getQueue().length, box = el('pendingBox');
+  box.style.display = n ? 'block' : 'none';
+  box.textContent = 'มี ' + n + ' รายการรอส่งเข้าชีท (จะส่งให้อัตโนมัติเมื่อออนไลน์)';
+}
+function submitTx(tx) {
+  tx.viewMonth = S.month;
+  // แสดงผลทันที แล้วค่อยส่ง
+  if (S.dash && tx.date.slice(0, 7) === S.month) {
+    S.dash.recent.unshift({ id: tx.id, date: tx.date, type: tx.type, category: tx.category, amount: tx.amount, method: tx.method, note: tx.note, tag: tx.tag });
+    if (S.view === 'home') renderHome();
+  }
+  toast('บันทึก ' + tx.category + ' ' + money(tx.amount) + ' บาท');
+  var q = getQueue(); q.push(tx); setQueue(q);
+  flushQueue();
+}
+var flushing = false;
+function flushQueue() {
+  if (flushing) return;
+  var q = getQueue();
+  if (!q.length) return;
+  flushing = true;
+  var tx = q[0];
+  call('addTransaction', tx).then(function (dash) {
+    setQueue(getQueue().filter(function (x) { return x.id !== tx.id; }));
+    flushing = false;
+    if (dash.month === S.month) { S.dash = dash; S.list = null; if (S.view === 'home') renderHome(); if (S.view === 'list') loadList(); }
+    flushQueue();
+  }).catch(function (e) {
+    flushing = false;
+    var msg = String(e && e.message || e);
+    if (/จำนวนเงิน|หมวด|ประเภท|วันที่/.test(msg)) { setQueue(getQueue().filter(function (x) { return x.id !== tx.id; })); fail(e); return; }
+    showPending();
+    setTimeout(flushQueue, 15000);
+  });
+}
+window.addEventListener('online', flushQueue);
+
+/* ======================= ปิดเดือน ======================= */
+var TYPE_ORDER = ['เงินสด/ธนาคาร', 'ลงทุน', 'สินทรัพย์อื่น', 'หนี้สิน'];
+function loadSnap() {
+  if (S.snap && S.snap.month === S.month) return renderSnap();
+  el('v-close').innerHTML = '<div class="loading">กำลังโหลด…</div>';
+  call('getSnapshotForm', S.month).then(function (rows) { S.snap = { month: S.month, rows: rows }; renderSnap(); }).catch(fail);
+}
+function renderSnap() {
+  var rows = S.snap.rows;
+  var html = '<div class="card"><div class="small muted">กรอกยอดคงเหลือ ณ สิ้นเดือน ' + monthLabel(S.month) + ' (ช่องว่าง = ใช้ยอดเดือนก่อนที่เป็นตัวจาง) แล้วกดบันทึกครั้งเดียว</div>' +
+    '<div class="actions"><button class="btn ghost" onclick="copyPrev()">ใช้ยอดเดือนก่อนทั้งหมด</button></div></div>';
+  var types = TYPE_ORDER.concat(rows.map(function (r) { return r.type; }).filter(function (t, i, a) { return TYPE_ORDER.indexOf(t) < 0 && a.indexOf(t) === i; }));
+  html += '<div class="grid2">';
+  types.forEach(function (type) {
+    var list = rows.map(function (r, i) { return { r: r, i: i }; }).filter(function (x) { return x.r.type === type; });
+    if (!list.length) return;
+    html += '<div class="card"><h2>' + esc(type) + '</h2>';
+    list.forEach(function (x) {
+      var r = x.r;
+      html += '<div class="acc"><div><div>' + esc(r.name) + '</div>' +
+        (r.prev != null ? '<div class="prev num">' + monthShort(r.prevMonth) + ': ' + money(r.prev, true) + '</div>' : '<div class="prev">ยังไม่มียอดเดิม</div>') + '</div>' +
+        '<input class="num ' + (r.value != null ? 'changed' : '') + '" inputmode="decimal" data-i="' + x.i + '" value="' + (r.value != null ? r.value : '') + '" placeholder="' + (r.prev != null ? r.prev : '0') + '" oninput="snapInput(this)"></div>';
+    });
+    html += '</div>';
+  });
+  html += '</div><div class="card" id="snapSum"></div>';
+  html += '<div class="actions"><button class="btn" id="snapSave" onclick="saveSnap()">บันทึกยอดสิ้นเดือน</button></div>';
+  el('v-close').innerHTML = html;
+  renderSnapSum();
+}
+function snapVal(r) { return r.value != null && r.value !== '' ? Number(r.value) : (r.prev != null ? r.prev : 0); }
+function snapInput(inp) {
+  var r = S.snap.rows[Number(inp.dataset.i)];
+  var v = inp.value.replace(/,/g, '').trim();
+  r.value = v === '' ? null : Number(v);
+  inp.classList.toggle('changed', v !== '');
+  renderSnapSum();
+}
+function copyPrev() {
+  S.snap.rows.forEach(function (r) { if (r.value == null && r.prev != null) r.value = r.prev; });
+  renderSnap();
+}
+function renderSnapSum() {
+  var assets = 0, debts = 0;
+  S.snap.rows.forEach(function (r) { var v = snapVal(r); if (r.type === 'หนี้สิน') debts += v; else assets += v; });
+  el('snapSum').innerHTML = '<div class="sum-line"><span>สินทรัพย์รวม</span><span class="num">' + money(assets, true) + '</span></div>' +
+    '<div class="sum-line"><span>หนี้สินรวม</span><span class="num">' + money(debts, true) + '</span></div>' +
+    '<div class="sum-line total"><span>ความมั่งคั่งสุทธิ</span><span class="num">' + money(assets - debts, true) + '</span></div>';
+}
+function saveSnap() {
+  var items = S.snap.rows.map(function (r) { return { name: r.name, value: snapVal(r) }; })
+    .filter(function (x, i) { var r = S.snap.rows[i]; return r.value != null || r.prev != null; });
+  el('snapSave').disabled = true;
+  toast('กำลังบันทึก…');
+  call('saveSnapshot', S.month, items).then(function (ov) {
+    S.overview = ov; S.snap = null; toast('บันทึกยอด ' + monthLabel(S.month) + ' แล้ว'); loadSnap();
+  }).catch(function (e) { el('snapSave').disabled = false; fail(e); });
+}
+
+/* ======================= ภาพรวม ======================= */
+function loadOverview() {
+  el('v-overview').innerHTML = '<div class="loading">กำลังโหลด…</div>';
+  call('getOverview').then(function (ov) { S.overview = ov; renderOverview(); }).catch(fail);
+}
+function renderOverview() {
+  var ov = S.overview, html = '';
+  var L = ov.latest;
+  if (!L) { el('v-overview').innerHTML = '<div class="card empty">ยังไม่มียอดสิ้นเดือน ไปที่ ปิดเดือน เพื่อเริ่มบันทึก</div><div class="actions"><button class="btn ghost" onclick="go(\'settings\')">ตั้งค่าการเชื่อมต่อ</button></div>'; return; }
+  var pct = Math.max(0, Math.min(1, L.netWorth / ov.goal));
+  html += '<div class="card hero"><div class="label">ความมั่งคั่งสุทธิ ณ ' + monthLabel(L.month) + '</div><div class="big num">฿' + money(L.netWorth) + '</div>' +
+    '<div class="bar" style="background:rgba(255,255,255,.2)"><i style="width:' + pct * 100 + '%;background:#fff"></i></div>' +
+    '<div class="small" style="margin-top:6px;opacity:.85">' + Math.round(pct * 100) + '% ของเป้า ' + money(ov.goal) + ' บาท</div></div>';
+  html += '<div class="card"><h2>ความมั่งคั่งสุทธิรายเดือน</h2>' + nwChart(ov.netWorth, ov.goal) + '</div>';
+  html += '<div class="grid2">';
+  html += '<div class="card"><h2>รายรับ รายจ่าย ออม <small>12 เดือนล่าสุด</small></h2>' + flowChart(ov.flows) + '</div>';
+  var groups = {};
+  L.items.forEach(function (it) { (groups[it.type || 'อื่นๆ'] = groups[it.type || 'อื่นๆ'] || []).push(it); });
+  html += '<div class="card"><h2>สินทรัพย์และหนี้สิน <small>' + monthLabel(L.month) + '</small></h2>';
+  Object.keys(groups).forEach(function (g) {
+    var sum = groups[g].reduce(function (a, x) { return a + x.value; }, 0);
+    html += '<div class="day-head"><span>' + esc(g) + '</span><span class="num">' + money(sum) + '</span></div>';
+    groups[g].sort(function (a, b) { return b.value - a.value; }).forEach(function (it) {
+      html += '<div class="sum-line small"><span>' + esc(it.name) + '</span><span class="num">' + money(it.value) + '</span></div>';
+    });
+  });
+  html += '</div></div>';
+  html += '<div class="actions"><button class="btn ghost" onclick="go(\'settings\')">ตั้งค่าการเชื่อมต่อ</button></div>';
+  el('v-overview').innerHTML = html;
+}
+function nwChart(data, goal) {
+  if (data.length < 2) return '<div class="empty">ต้องมียอดอย่างน้อย 2 เดือนถึงจะเห็นกราฟ</div>';
+  var W = 360, H = 200, pl = 44, pr = 24, pt = 20, pb = 24;
+  var vals = data.map(function (d) { return d.netWorth; });
+  var lo = Math.min(0, Math.min.apply(null, vals)), hi = Math.max(goal, Math.max.apply(null, vals));
+  var X = function (i) { return pl + i * (W - pl - pr) / (data.length - 1); };
+  var Y = function (v) { return pt + (hi - v) / (hi - lo) * (H - pt - pb); };
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="กราฟความมั่งคั่งสุทธิ">';
+  for (var k = 0; k <= 4; k++) { var v = lo + (hi - lo) * k / 4; s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#e3e6e0"/><text x="' + (pl - 8) + '" y="' + (Y(v) + 4) + '" font-size="11" fill="#6b736e" text-anchor="end">' + moneyShort(v) + '</text>'; }
+  s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(goal) + '" y2="' + Y(goal) + '" stroke="#b7791f" stroke-dasharray="5 4"/><text x="' + (W - pr) + '" y="' + (Y(goal) - 6) + '" font-size="11" fill="#b7791f" text-anchor="end">เป้า ' + moneyShort(goal) + '</text>';
+  s += '<polyline fill="none" stroke="#1f6f5c" stroke-width="2.5" points="' + data.map(function (d, i) { return X(i) + ',' + Y(d.netWorth); }).join(' ') + '"/>';
+  var step = Math.ceil(data.length / 6);
+  data.forEach(function (d, i) {
+    s += '<circle cx="' + X(i) + '" cy="' + Y(d.netWorth) + '" r="3.5" fill="#1f6f5c"><title>' + monthLabel(d.month) + ': ' + money(d.netWorth) + '</title></circle>';
+    if (i % step === 0 || i === data.length - 1) s += '<text x="' + X(i) + '" y="' + (H - 8) + '" font-size="11" fill="#6b736e" text-anchor="middle">' + monthShort(d.month) + '</text>';
+  });
+  return s + '</svg>';
+}
+function flowChart(flows) {
+  if (!flows.length) return '<div class="empty">ยังไม่มีรายการ</div>';
+  var W = 360, H = 200, pl = 36, pr = 6, pt = 24, pb = 24;
+  var hi = Math.max.apply(null, flows.map(function (f) { return Math.max(f.income, f.expense + f.saving); })) || 1;
+  var bw = (W - pl - pr) / flows.length;
+  var Y = function (v) { return pt + (hi - v) / hi * (H - pt - pb); };
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="กราฟรายรับรายจ่าย">';
+  s += '<g font-size="11" fill="#6b736e"><rect x="' + pl + '" y="4" width="10" height="10" fill="#9fc9b8"/><text x="' + (pl + 14) + '" y="13">รายรับ</text>' +
+    '<rect x="' + (pl + 60) + '" y="4" width="10" height="10" fill="#c96d5b"/><text x="' + (pl + 74) + '" y="13">รายจ่าย</text>' +
+    '<rect x="' + (pl + 124) + '" y="4" width="10" height="10" fill="#6d4bb5"/><text x="' + (pl + 138) + '" y="13">ออม/ลงทุน</text></g>';
+  for (var k = 0; k <= 3; k++) { var v = hi * k / 3; s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#e3e6e0"/><text x="' + (pl - 6) + '" y="' + (Y(v) + 4) + '" font-size="11" fill="#6b736e" text-anchor="end">' + moneyShort(v) + '</text>'; }
+  flows.forEach(function (f, i) {
+    var x = pl + i * bw, w = Math.min(18, bw * 0.32);
+    s += '<rect x="' + (x + bw / 2 - w - 1) + '" y="' + Y(f.income) + '" width="' + w + '" height="' + (Y(0) - Y(f.income)) + '" fill="#9fc9b8"><title>รายรับ ' + money(f.income) + '</title></rect>';
+    s += '<rect x="' + (x + bw / 2 + 1) + '" y="' + Y(f.expense) + '" width="' + w + '" height="' + (Y(0) - Y(f.expense)) + '" fill="#c96d5b"><title>รายจ่าย ' + money(f.expense) + '</title></rect>';
+    s += '<rect x="' + (x + bw / 2 + 1) + '" y="' + Y(f.expense + f.saving) + '" width="' + w + '" height="' + (Y(f.expense) - Y(f.expense + f.saving)) + '" fill="#6d4bb5"><title>ออม/ลงทุน ' + money(f.saving) + '</title></rect>';
+    s += '<text x="' + (x + bw / 2) + '" y="' + (H - 8) + '" font-size="11" fill="#6b736e" text-anchor="middle">' + monthShort(f.month) + '</text>';
+  });
+  return s + '</svg>';
+}
+
+/* ======================= ตั้งค่าการเชื่อมต่อ ======================= */
+function renderSettings(msg) {
+  var c = getCfg();
+  el('v-settings').innerHTML = '<div class="card"><div class="small muted" style="margin-bottom:12px">ใส่ URL ของ Apps Script (ลงท้ายด้วย /exec) และรหัสลับที่อยู่ในไฟล์ Code.gs บรรทัด API_KEY ตั้งครั้งเดียว เครื่องจะจำไว้</div>' +
+    '<div class="fields"><div class="full"><label>URL ของ Apps Script<input id="cfgUrl" value="' + esc(c.url || '') + '" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"></label></div>' +
+    '<div class="full"><label>รหัสลับ<input id="cfgKey" value="' + esc(c.key || '') + '" autocomplete="off"></label></div></div>' +
+    (msg ? '<div class="small" style="margin-top:10px;color:var(--bad)">' + esc(msg) + '</div>' : '') +
+    '<div class="actions"><button class="btn" id="cfgSave" onclick="saveSettings()">บันทึกและเชื่อมต่อ</button></div></div>';
+}
+function saveSettings() {
+  var url = el('cfgUrl').value.trim(), key = el('cfgKey').value.trim();
+  if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) return renderSettings('URL ต้องขึ้นต้นด้วย https://script.google.com/ และลงท้ายด้วย /exec');
+  if (!key) return renderSettings('ใส่รหัสลับด้วยครับ');
+  localStorage.setItem(CFG_KEY, JSON.stringify({ url: url, key: key }));
+  el('cfgSave').disabled = true;
+  el('cfgSave').textContent = 'กำลังเชื่อมต่อ…';
+  start();
+}
+
+/* ======================= เริ่มต้น ======================= */
+el('amount').addEventListener('keydown', function (e) { if (e.key === 'Enter') el('amount').blur(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeEntry(); });
+function start() {
+  if (!getCfg().url) { go('settings'); return; }
+  call('getBootstrap').then(function (b) {
+    S.today = b.today; S.month = b.month; S.categories = b.categories; S.accounts = b.accounts;
+    S.payMethods = b.payMethods; S.goal = b.goal; S.dash = b.dashboard;
+    if (S.payMethods.indexOf(S.entry.method) < 0) S.entry.method = S.payMethods[0];
+    el('monthLabel').textContent = monthLabel(S.month);
+    go('home');
+    showPending();
+    flushQueue();
+  }).catch(function (e) {
+    go('settings');
+    renderSettings('เชื่อมต่อไม่สำเร็จ: ' + (e && e.message || e));
+  });
+}
+start();
+</script>
+</body>
+</html>
